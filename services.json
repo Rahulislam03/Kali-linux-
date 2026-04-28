@@ -1,0 +1,17 @@
+[
+  {
+    "id": "ip",
+    "name": "Trace Connection",
+    "output": "Starting network diagnostic...\nStatus: Connected"
+  },
+  {
+    "id": "tools",
+    "name": "My Tools",
+    "output": "Checking Python repositories...\n1. Bot_v1.py\n2. Scanner_v2.py"
+  },
+  {
+    "id": "contact",
+    "name": "Contact Admin",
+    "url": "https://t.me/your_username"
+  }
+]
