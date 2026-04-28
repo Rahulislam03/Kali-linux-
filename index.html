@@ -3,50 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mixveo | Dark Terminal OS</title>
+    <title>web-kali-linux | Pro Terminal OS</title>
     <style>
-        /* CSS for Dark Terminal Look */
-        body { background-color: #000; color: #00ff41; font-family: 'Courier New', monospace; margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
-        #login-screen { border: 1px solid #00ff41; padding: 40px; text-align: center; box-shadow: 0 0 20px #00ff41; background: rgba(0, 20, 0, 0.9); width: 350px; }
-        .btn-social { width: 100%; padding: 12px; margin: 10px 0; border: none; cursor: pointer; font-weight: bold; font-family: inherit; transition: 0.3s; }
-        .google-btn { background: #db4437; color: white; }
-        .facebook-btn { background: #4267B2; color: white; }
-        .terminal-btn { background: #00ff41; color: black; }
-        #terminal { display: none; width: 95%; height: 90%; border: 1px solid #00ff41; padding: 20px; overflow-y: auto; flex-direction: column; background: #000; }
-        .output { margin-bottom: 8px; line-height: 1.5; text-shadow: 0 0 5px #00ff41; }
-        .input-area { display: flex; align-items: center; margin-top: 5px; }
-        #cmdInput { border: none; width: 100%; background: transparent; color: #00ff41; outline: none; font-family: inherit; font-size: 16px; }
-        .glitch { animation: scan 2s linear infinite; }
-        @keyframes scan { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; overflow: hidden; font-family: 'Courier New', monospace; }
+        canvas { display: block; position: absolute; top: 0; left: 0; z-index: -1; opacity: 0.3; }
+        
+        #login-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; color: #00ff41; z-index: 10; position: relative; }
+        .login-box { border: 1px solid #00ff41; padding: 30px; background: rgba(0,0,0,0.8); box-shadow: 0 0 20px #00ff41; text-align: center; }
+        
+        button { background: #00ff41; color: #000; border: none; padding: 10px 20px; margin: 10px; cursor: pointer; font-weight: bold; font-family: inherit; }
+        
+        #terminal { display: none; width: 100%; height: 100%; padding: 20px; box-sizing: border-box; overflow-y: auto; color: #00ff41; z-index: 5; position: relative; background: rgba(0,0,0,0.7); }
+        .output { margin-bottom: 5px; white-space: pre-wrap; word-wrap: break-word; }
+        .input-line { display: flex; align-items: center; }
+        #cmdInput { border: none; background: transparent; color: #00ff41; outline: none; flex: 1; font-family: inherit; font-size: 16px; }
+        .user-prefix { color: #55ff55; font-weight: bold; }
     </style>
 </head>
 <body>
 
+    <canvas id="matrix"></canvas>
+
     <div id="login-screen">
-        <h2 class="glitch">IDENTITY REQUIRED</h2>
-        <p style="font-size: 12px; color: #888;">Authorized Personnel Only</p>
-        
-        <button class="btn-social google-btn" onclick="googleLogin()">LOGIN WITH GOOGLE</button>
-        <button class="btn-social facebook-btn" onclick="facebookLogin()">LOGIN WITH FACEBOOK</button>
-        
-        <div style="margin: 15px 0; font-size: 12px;">--- OR GUEST ACCESS ---</div>
-        <input type="text" id="guestName" placeholder="Guest Name" style="background:transparent; border:1px solid #00ff41; color:#00ff41; padding:10px; width:80%; margin-bottom:10px; outline:none;">
-        <button class="btn-social terminal-btn" onclick="accessGranted(document.getElementById('guestName').value || 'Guest')">ENTER AS GUEST</button>
+        <div class="login-box">
+            <h1>SYSTEM AUTHENTICATION</h1>
+            <button onclick="googleLogin()">LOGIN WITH GOOGLE</button>
+            <p style="font-size: 10px;">AUTHORIZED ACCESS ONLY</p>
+        </div>
     </div>
 
     <div id="terminal">
         <div id="history"></div>
-        <div class="input-area">
-            <span>root@mixveo:~$ &nbsp;</span>
-            <input type="text" id="cmdInput" autofocus>
+        <div class="input-line">
+            <span class="user-prefix"><span id="username-display">guest</span>@mixveo:~$ &nbsp;</span>
+            <input type="text" id="cmdInput" autofocus autocomplete="off">
         </div>
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, FacebookAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    <audio id="typeSound" src="https://www.soundjay.com/communication/typewriter-key-1.mp3"></audio>
 
-        // Your Firebase Configuration
+    <script type="module">
+        // Firebase Setup
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
         const firebaseConfig = {
             apiKey: "AIzaSyB55EOqdZRur1zfWSc2pNrXO0yncP3kz74",
             authDomain: "kali-linux-terminal-dd03c.firebaseapp.com",
@@ -59,81 +59,140 @@
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
 
-        // Google Login
         window.googleLogin = async () => {
-            const provider = new GoogleAuthProvider();
             try {
                 const result = await signInWithPopup(auth, provider);
-                window.accessGranted(result.user.displayName);
-            } catch (err) { alert("Google Auth Failed!"); }
-        };
-
-        // Facebook Login
-        window.facebookLogin = async () => {
-            const provider = new FacebookAuthProvider();
-            try {
-                const result = await signInWithPopup(auth, provider);
-                window.accessGranted(result.user.displayName);
-            } catch (err) { alert("Facebook Auth Failed! (Check if FB App is configured)"); }
+                startTerminal(result.user.displayName);
+            } catch (err) { alert("Auth Failed: " + err.message); }
         };
     </script>
 
     <script>
-        const loginScreen = document.getElementById('login-screen');
+        const canvas = document.getElementById('matrix');
+        const ctx = canvas.getContext('2d');
         const terminal = document.getElementById('terminal');
-        const history = document.getElementById('history');
+        const loginScreen = document.getElementById('login-screen');
+        const historyDiv = document.getElementById('history');
         const cmdInput = document.getElementById('cmdInput');
+        const typeSound = document.getElementById('typeSound');
 
-        // Access Granted Function with Voice
-        window.accessGranted = (name) => {
+        // 1. Matrix Background Effect
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*()*&^%";
+        const fontSize = 16;
+        const columns = canvas.width / fontSize;
+        const drops = Array(Math.floor(columns)).fill(1);
+
+        function drawMatrix() {
+            ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "#0F0";
+            ctx.font = fontSize + "px monospace";
+            for (let i = 0; i < drops.length; i++) {
+                const text = letters.charAt(Math.floor(Math.random() * letters.length));
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+                drops[i]++;
+            }
+        }
+        setInterval(drawMatrix, 50);
+
+        // 2. Command History & IP Tracking
+        let commandHistory = [];
+        let historyIndex = -1;
+        let currentUser = "guest";
+
+        async function startTerminal(name) {
+            currentUser = name.toLowerCase().replace(/\s+/g, '');
+            document.getElementById('username-display').innerText = currentUser;
             loginScreen.style.display = 'none';
-            terminal.style.display = 'flex';
-
-            // Robotic Voice Message
-            const speech = new SpeechSynthesisUtterance(`Welcome to the Dark Web Terminal, ${name}. System access is granted.`);
-            speech.rate = 0.8; 
-            speech.pitch = 0.5; 
+            terminal.style.display = 'block';
+            
+            // Welcome Voice
+            const speech = new SpeechSynthesisUtterance(`Welcome back, ${name}. Accessing Mixveo Mainframe.`);
+            speech.pitch = 0.4; speech.rate = 0.8;
             window.speechSynthesis.speak(speech);
 
-            printOutput("Connecting to secure server at 127.0.0.1...");
-            setTimeout(() => printOutput(`Authenticated as: ${name}`), 600);
-            setTimeout(() => printOutput("Type 'help' to see authorized commands."), 1200);
-        };
+            printOutput("System: Initializing...");
+            // IP Trace
+            try {
+                const res = await fetch('https://ipapi.co/json/');
+                const data = await res.json();
+                printOutput(`Trace: Connected from ${data.ip} (${data.city}, ${data.country_name})`);
+            } catch (e) { printOutput("Trace: Secure VPN detected. Location masked."); }
+        }
 
-        // Terminal Command Logic
+        // 3. Command Logic
         cmdInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                const cmd = cmdInput.value.trim().toLowerCase();
-                printOutput(`root@mixveo:~$ ${cmd}`);
-                
-                if (cmd === 'help') {
-                    printOutput("AVAILABLE COMMANDS:\n- about: User Information\n- mixveo: Company Profile\n- scan: Network Scan\n- clear: Clear Terminal\n- exit: Logout");
-                } else if (cmd === 'about') {
-                    printOutput("USER: Islam Rahul\nSTATUS: Elite Developer\nFIELD: Python, Automation, Cybersecurity.");
-                } else if (cmd === 'mixveo') {
-                    printOutput("MIXVEO: A premium brand for Sourcing and Technical Solutions.");
-                } else if (cmd === 'scan') {
-                    printOutput("Scanning for vulnerabilities...");
-                    setTimeout(() => printOutput("Target: localhost -> No threats detected. System Secure."), 1000);
-                } else if (cmd === 'clear') {
-                    history.innerHTML = "";
-                } else if (cmd === 'exit') {
-                    location.reload();
-                } else if (cmd !== "") {
-                    printOutput(`bash: ${cmd}: command not found`);
-                }
+            // Typing Sound
+            typeSound.currentTime = 0;
+            typeSound.play();
 
+            if (e.key === 'Enter') {
+                const cmd = cmdInput.value.trim();
+                if (cmd) {
+                    commandHistory.push(cmd);
+                    historyIndex = commandHistory.length;
+                    executeCommand(cmd);
+                }
                 cmdInput.value = "";
-                terminal.scrollTop = terminal.scrollHeight;
+            } else if (e.key === 'ArrowUp') {
+                if (historyIndex > 0) {
+                    historyIndex--;
+                    cmdInput.value = commandHistory[historyIndex];
+                }
+            } else if (e.key === 'ArrowDown') {
+                if (historyIndex < commandHistory.length - 1) {
+                    historyIndex++;
+                    cmdInput.value = commandHistory[historyIndex];
+                } else {
+                    historyIndex = commandHistory.length;
+                    cmdInput.value = "";
+                }
             }
         });
+
+        function executeCommand(cmd) {
+            printOutput(`${currentUser}@mixveo:~$ ${cmd}`);
+            const parts = cmd.toLowerCase().split(" ");
+            const mainCmd = parts[0];
+
+            switch(mainCmd) {
+                case 'help':
+                    printOutput("COMMANDS: ls, cat, clear, whoami, ifconfig, neofetch, exit");
+                    break;
+                case 'ls':
+                    printOutput("mixveo_bio.txt   projects.sh   secret_keys.enc");
+                    break;
+                case 'whoami':
+                    printOutput(`User: ${currentUser}\nPrivilege: Root/Admin\nSystem: Mixveo OS`);
+                    break;
+                case 'ifconfig':
+                    printOutput("eth0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST> mtu 1500\ninet 192.168.0.1  netmask 255.255.255.0");
+                    break;
+                case 'neofetch':
+                    printOutput("  MMMMMMMMMMMMMMMMMMMMMMMM  \n  MM   Mixveo Terminal   MM  \n  MM   OS: Mixveo Linux  MM  \n  MM   Kernel: 5.15.0    MM  \n  MM   Shell: bash 5.1   MM  ");
+                    break;
+                case 'clear':
+                    historyDiv.innerHTML = "";
+                    break;
+                case 'exit':
+                    location.reload();
+                    break;
+                default:
+                    printOutput(`bash: ${mainCmd}: command not found`);
+            }
+            terminal.scrollTop = terminal.scrollHeight;
+        }
 
         function printOutput(text) {
             const div = document.createElement('div');
             div.className = "output";
-            div.innerText = "> " + text;
-            history.appendChild(div);
+            div.innerText = text;
+            historyDiv.appendChild(div);
         }
     </script>
 </body>
