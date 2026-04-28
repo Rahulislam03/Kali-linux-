@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mixveo | Secure Terminal</title>
+    <style>
+        body { background-color: #000; color: #00ff41; font-family: 'Courier New', monospace; margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
+        #login-box { border: 1px solid #00ff41; padding: 30px; text-align: center; box-shadow: 0 0 15px #00ff41; }
+        input { background: transparent; border: 1px solid #00ff41; color: #00ff41; padding: 10px; margin: 10px 0; outline: none; width: 200px; }
+        button { background: #00ff41; color: #000; border: none; padding: 10px 20px; cursor: pointer; font-weight: bold; width: 100%; }
+        #terminal { display: none; width: 95%; height: 90%; border: 1px solid #00ff41; padding: 20px; overflow-y: auto; flex-direction: column; background: rgba(0,0,0,0.9); }
+        .output { margin-bottom: 8px; line-height: 1.4; }
+        .input-area { display: flex; align-items: center; }
+        #cmdInput { border: none; width: 100%; background: transparent; color: #00ff41; outline: none; font-family: inherit; font-size: 16px; }
+        .glitch { animation: glitch 1s infinite; }
+        @keyframes glitch { 0% { opacity: 1; } 50% { opacity: 0.8; } 100% { opacity: 1; } }
+    </style>
+</head>
+<body>
+
+    <div id="login-box">
+        <h2 class="glitch">SYSTEM AUTHENTICATION</h2>
+        <p>Login via Google or Username</p>
+        <input type="text" id="username" placeholder="Username"><br>
+        <input type="password" placeholder="Password"><br>
+        <button onclick="accessGranted()">ACCESS TERMINAL</button>
+    </div>
+
+    <div id="terminal">
+        <div id="history"></div>
+        <div class="input-area">
+            <span>root@mixveo:~$ &nbsp;</span>
+            <input type="text" id="cmdInput" autofocus>
+        </div>
+    </div>
+
+    <script>
+        const loginBox = document.getElementById('login-box');
+        const terminal = document.getElementById('terminal');
+        const history = document.getElementById('history');
+        const cmdInput = document.getElementById('cmdInput');
+
+        function accessGranted() {
+            const user = document.getElementById('username').value || "Agent";
+            
+            // রোবোটিক ভয়েস মেসেজ
+            const msg = new SpeechSynthesisUtterance(`Welcome to the Dark Web Terminal, ${user}. You are now connected to Mixveo secure network.`);
+            msg.rate = 0.8; 
+            msg.pitch = 0.5; 
+            window.speechSynthesis.speak(msg);
+
+            loginBox.style.display = 'none';
+            terminal.style.display = 'flex';
+            
+            printOutput("Connecting to secure proxy...");
+            setTimeout(() => printOutput("Bypassing firewall... [DONE]"), 500);
+            setTimeout(() => printOutput("Welcome, " + user + ". Type 'help' for available tools."), 1000);
+        }
+
+        cmdInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const cmd = cmdInput.value.toLowerCase();
+                printOutput("root@mixveo:~$ " + cmd);
+                
+                // কমান্ড লজিক
+                if (cmd === 'help') printOutput("Available: help, scan, mixveo, clear, exit");
+                else if (cmd === 'mixveo') printOutput("Mixveo: Your Advanced Sourcing & Tech Partner.");
+                else if (cmd === 'scan') printOutput("Scanning local network... No intruders found.");
+                else if (cmd === 'clear') history.innerHTML = "";
+                else printOutput("Error: '" + cmd + "' is not a recognized command.");
+
+                cmdInput.value = "";
+                terminal.scrollTop = terminal.scrollHeight;
+            }
+        });
+
+        function printOutput(text) {
+            const div = document.createElement('div');
+            div.className = "output";
+            div.innerText = "> " + text;
+            history.appendChild(div);
+        }
+    </script>
+</body>
+  </html>
+  
