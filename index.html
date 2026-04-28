@@ -3,28 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mixveo | Secure Terminal</title>
+    <title>Mixveo | Dark Terminal OS</title>
     <style>
+        /* CSS for Dark Terminal Look */
         body { background-color: #000; color: #00ff41; font-family: 'Courier New', monospace; margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
-        #login-box { border: 1px solid #00ff41; padding: 30px; text-align: center; box-shadow: 0 0 15px #00ff41; }
-        input { background: transparent; border: 1px solid #00ff41; color: #00ff41; padding: 10px; margin: 10px 0; outline: none; width: 200px; }
-        button { background: #00ff41; color: #000; border: none; padding: 10px 20px; cursor: pointer; font-weight: bold; width: 100%; }
-        #terminal { display: none; width: 95%; height: 90%; border: 1px solid #00ff41; padding: 20px; overflow-y: auto; flex-direction: column; background: rgba(0,0,0,0.9); }
-        .output { margin-bottom: 8px; line-height: 1.4; }
-        .input-area { display: flex; align-items: center; }
+        #login-screen { border: 1px solid #00ff41; padding: 40px; text-align: center; box-shadow: 0 0 20px #00ff41; background: rgba(0, 20, 0, 0.9); width: 350px; }
+        .btn-social { width: 100%; padding: 12px; margin: 10px 0; border: none; cursor: pointer; font-weight: bold; font-family: inherit; transition: 0.3s; }
+        .google-btn { background: #db4437; color: white; }
+        .facebook-btn { background: #4267B2; color: white; }
+        .terminal-btn { background: #00ff41; color: black; }
+        #terminal { display: none; width: 95%; height: 90%; border: 1px solid #00ff41; padding: 20px; overflow-y: auto; flex-direction: column; background: #000; }
+        .output { margin-bottom: 8px; line-height: 1.5; text-shadow: 0 0 5px #00ff41; }
+        .input-area { display: flex; align-items: center; margin-top: 5px; }
         #cmdInput { border: none; width: 100%; background: transparent; color: #00ff41; outline: none; font-family: inherit; font-size: 16px; }
-        .glitch { animation: glitch 1s infinite; }
-        @keyframes glitch { 0% { opacity: 1; } 50% { opacity: 0.8; } 100% { opacity: 1; } }
+        .glitch { animation: scan 2s linear infinite; }
+        @keyframes scan { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
     </style>
 </head>
 <body>
 
-    <div id="login-box">
-        <h2 class="glitch">SYSTEM AUTHENTICATION</h2>
-        <p>Login via Google or Username</p>
-        <input type="text" id="username" placeholder="Username"><br>
-        <input type="password" placeholder="Password"><br>
-        <button onclick="accessGranted()">ACCESS TERMINAL</button>
+    <div id="login-screen">
+        <h2 class="glitch">IDENTITY REQUIRED</h2>
+        <p style="font-size: 12px; color: #888;">Authorized Personnel Only</p>
+        
+        <button class="btn-social google-btn" onclick="googleLogin()">LOGIN WITH GOOGLE</button>
+        <button class="btn-social facebook-btn" onclick="facebookLogin()">LOGIN WITH FACEBOOK</button>
+        
+        <div style="margin: 15px 0; font-size: 12px;">--- OR GUEST ACCESS ---</div>
+        <input type="text" id="guestName" placeholder="Guest Name" style="background:transparent; border:1px solid #00ff41; color:#00ff41; padding:10px; width:80%; margin-bottom:10px; outline:none;">
+        <button class="btn-social terminal-btn" onclick="accessGranted(document.getElementById('guestName').value || 'Guest')">ENTER AS GUEST</button>
     </div>
 
     <div id="terminal">
@@ -35,40 +42,87 @@
         </div>
     </div>
 
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, FacebookAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        // Your Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyB55EOqdZRur1zfWSc2pNrXO0yncP3kz74",
+            authDomain: "kali-linux-terminal-dd03c.firebaseapp.com",
+            projectId: "kali-linux-terminal-dd03c",
+            storageBucket: "kali-linux-terminal-dd03c.firebasestorage.app",
+            messagingSenderId: "205004830636",
+            appId: "1:205004830636:web:cfbb3ff118d2a42e002c09",
+            measurementId: "G-08CFT7E314"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // Google Login
+        window.googleLogin = async () => {
+            const provider = new GoogleAuthProvider();
+            try {
+                const result = await signInWithPopup(auth, provider);
+                window.accessGranted(result.user.displayName);
+            } catch (err) { alert("Google Auth Failed!"); }
+        };
+
+        // Facebook Login
+        window.facebookLogin = async () => {
+            const provider = new FacebookAuthProvider();
+            try {
+                const result = await signInWithPopup(auth, provider);
+                window.accessGranted(result.user.displayName);
+            } catch (err) { alert("Facebook Auth Failed! (Check if FB App is configured)"); }
+        };
+    </script>
+
     <script>
-        const loginBox = document.getElementById('login-box');
+        const loginScreen = document.getElementById('login-screen');
         const terminal = document.getElementById('terminal');
         const history = document.getElementById('history');
         const cmdInput = document.getElementById('cmdInput');
 
-        function accessGranted() {
-            const user = document.getElementById('username').value || "Agent";
-            
-            // রোবোটিক ভয়েস মেসেজ
-            const msg = new SpeechSynthesisUtterance(`Welcome to the Dark Web Terminal, ${user}. You are now connected to Mixveo secure network.`);
-            msg.rate = 0.8; 
-            msg.pitch = 0.5; 
-            window.speechSynthesis.speak(msg);
-
-            loginBox.style.display = 'none';
+        // Access Granted Function with Voice
+        window.accessGranted = (name) => {
+            loginScreen.style.display = 'none';
             terminal.style.display = 'flex';
-            
-            printOutput("Connecting to secure proxy...");
-            setTimeout(() => printOutput("Bypassing firewall... [DONE]"), 500);
-            setTimeout(() => printOutput("Welcome, " + user + ". Type 'help' for available tools."), 1000);
-        }
 
+            // Robotic Voice Message
+            const speech = new SpeechSynthesisUtterance(`Welcome to the Dark Web Terminal, ${name}. System access is granted.`);
+            speech.rate = 0.8; 
+            speech.pitch = 0.5; 
+            window.speechSynthesis.speak(speech);
+
+            printOutput("Connecting to secure server at 127.0.0.1...");
+            setTimeout(() => printOutput(`Authenticated as: ${name}`), 600);
+            setTimeout(() => printOutput("Type 'help' to see authorized commands."), 1200);
+        };
+
+        // Terminal Command Logic
         cmdInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
-                const cmd = cmdInput.value.toLowerCase();
-                printOutput("root@mixveo:~$ " + cmd);
+                const cmd = cmdInput.value.trim().toLowerCase();
+                printOutput(`root@mixveo:~$ ${cmd}`);
                 
-                // কমান্ড লজিক
-                if (cmd === 'help') printOutput("Available: help, scan, mixveo, clear, exit");
-                else if (cmd === 'mixveo') printOutput("Mixveo: Your Advanced Sourcing & Tech Partner.");
-                else if (cmd === 'scan') printOutput("Scanning local network... No intruders found.");
-                else if (cmd === 'clear') history.innerHTML = "";
-                else printOutput("Error: '" + cmd + "' is not a recognized command.");
+                if (cmd === 'help') {
+                    printOutput("AVAILABLE COMMANDS:\n- about: User Information\n- mixveo: Company Profile\n- scan: Network Scan\n- clear: Clear Terminal\n- exit: Logout");
+                } else if (cmd === 'about') {
+                    printOutput("USER: Islam Rahul\nSTATUS: Elite Developer\nFIELD: Python, Automation, Cybersecurity.");
+                } else if (cmd === 'mixveo') {
+                    printOutput("MIXVEO: A premium brand for Sourcing and Technical Solutions.");
+                } else if (cmd === 'scan') {
+                    printOutput("Scanning for vulnerabilities...");
+                    setTimeout(() => printOutput("Target: localhost -> No threats detected. System Secure."), 1000);
+                } else if (cmd === 'clear') {
+                    history.innerHTML = "";
+                } else if (cmd === 'exit') {
+                    location.reload();
+                } else if (cmd !== "") {
+                    printOutput(`bash: ${cmd}: command not found`);
+                }
 
                 cmdInput.value = "";
                 terminal.scrollTop = terminal.scrollHeight;
@@ -83,5 +137,4 @@
         }
     </script>
 </body>
-  </html>
-  
+</html>
