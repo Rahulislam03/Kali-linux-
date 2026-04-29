@@ -1,1 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Root OS | Admin Control</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <style>
+        #admin-container { display: flex; flex-direction: column; height: 100vh; position: relative; z-index: 5; }
+        #top-bar { background: rgba(20, 0, 0, 0.9); border-bottom: 1px solid #ff3333; padding: 10px 20px; display: flex; justify-content: space-between; }
+        
+        #terminal { flex: 1; padding: 25px; overflow-y: auto; background: rgba(0,0,0,0.85); color: #00ff41; }
+        
+        /* প্রোফাইল ম্যানেজমেন্ট কার্ড */
+        .admin-card {
+            background: rgba(0, 20, 0, 0.9);
+            border: 1px solid #00ff41;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        .admin-card h2 { font-size: 14px; color: #ff3333; margin-top: 0; letter-spacing: 3px; }
+        
+        .input-group { margin: 10px 0; }
+        .input-group input { 
+            background: #000; border: 1px solid #00ff41; color: #00ff41; 
+            padding: 8px; width: calc(100% - 20px); font-family: inherit; 
+        }
 
+        #menu-container { height: 180px; background: rgba(10, 0, 0, 0.98); border-top: 1px solid #ff3333; padding: 15px; }
+        .admin-btn { 
+            background: transparent; border: 1px solid #ff3333; color: #ff3333; 
+            padding: 10px; cursor: pointer; text-transform: uppercase; font-size: 11px;
+        }
+        .admin-btn:hover { background: #ff3333; color: #000; box-shadow: 0 0 15px #ff3333; }
+    </style>
+</head>
+<body>
+
+    <canvas id="matrix"></canvas>
+
+    <div id="admin-container">
+        <div id="top-bar">
+            <div style="color: #ff3333; font-weight: bold; letter-spacing: 2px;">ADMIN_PANEL_V5.0</div>
+            <a href="../dashboard.html" style="color: #00ff41; text-decoration: none; font-size: 12px;">[ EXIT_ADMIN ]</a>
+        </div>
+
+        <div id="terminal">
+            <div class="admin-card">
+                <h2>AGENT PROFILE MANAGEMENT</h2>
+                <div class="input-group">
+                    <input type="text" id="new-name" placeholder="Update Agent Name">
+                </div>
+                <div class="input-group">
+                    <input type="text" id="new-pic" placeholder="Update Profile Picture URL">
+                </div>
+                <button class="admin-btn" onclick="updateProfileData()">Save Changes</button>
+            </div>
+
+            <div id="admin-logs">
+                <div class="output" style="color: #ff3333;">> [SECURITY] Awaiting administrator authentication...</div>
+            </div>
+        </div>
+
+        <div id="menu-container">
+            <div style="font-size: 10px; color: #ff3333; margin-bottom: 10px; letter-spacing: 3px;">SYSTEM OVERRIDE</div>
+            <div class="button-grid">
+                <button class="admin-btn" onclick="clearLogs()">Clear Terminal</button>
+                <button class="admin-btn" onclick="fetchUsers()">Fetch User List</button>
+                <button class="admin-btn" style="border-color: #00ff41; color: #00ff41;" onclick="logout()">Logout Session</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged, updateProfile, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyB55EOqdZRur1zfWSc2pNrXO0yncP3kz74",
+            authDomain: "kali-linux-terminal-dd03c.firebaseapp.com",
+            projectId: "kali-linux-terminal-dd03c",
+            storageBucket: "kali-linux-terminal-dd03c.firebasestorage.app",
+            messagingSenderId: "205004830636",
+            appId: "1:205004830636:web:cfbb3ff118d2a42e002c09",
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // Security Check: শুধু আপনি (Islam Rahul) ঢুকতে পারবেন কি না তা চেক করবে
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                printAdminLog(`[OK] Access Granted for: ${user.displayName}`);
+                // আপনি চাইলে এখানে আপনার ইমেইল চেক করতে পারেন
+                // if(user.email !== "your-email@gmail.com") window.location.href="../dashboard.html";
+            } else {
+                window.location.href = "../index.html";
+            }
+        });
+
+        window.updateProfileData = async () => {
+            const name = document.getElementById('new-name').value;
+            const pic = document.getElementById('new-pic').value;
+            if(auth.currentUser) {
+                printAdminLog("[SYS] Updating remote profile...");
+                await updateProfile(auth.currentUser, {
+                    displayName: name || auth.currentUser.displayName,
+                    photoURL: pic || auth.currentUser.photoURL
+                });
+                printAdminLog("[SUCCESS] Profile updated. Reloading...");
+                setTimeout(() => location.reload(), 1500);
+            }
+        };
+
+        window.logout = () => signOut(auth).then(() => window.location.href="../index.html");
+
+        function printAdminLog(text) {
+            const div = document.createElement('div');
+            div.className = "output";
+            div.innerText = "> " + text;
+            document.getElementById('admin-logs').appendChild(div);
+        }
+    </script>
+    
+    <script>
+        // Matrix Background (Inline for simplicity)
+        const canvas = document.getElementById('matrix');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+        const alphabet = "01";
+        const drops = Array(Math.floor(canvas.width / 16)).fill(1);
+        function draw() {
+            ctx.fillStyle = "rgba(0, 0, 0, 0.05)"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "#ff0000"; ctx.font = "16px monospace"; // Admin theme is RED
+            drops.forEach((y, i) => {
+                ctx.fillText(alphabet.charAt(Math.floor(Math.random() * 2)), i * 16, y * 16);
+                if (y * 16 > canvas.height && Math.random() > 0.975) drops[i] = 0; drops[i]++;
+            });
+        }
+        setInterval(draw, 50);
+    </script>
+</body>
+              </html>
+  
