@@ -3,85 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Root Terminal | Dashboard</title>
+    <title>Root OS v4.0 | Dashboard</title>
     <style>
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; overflow: hidden; font-family: 'Courier New', monospace; }
-        canvas { display: block; position: absolute; top: 0; left: 0; z-index: 1; opacity: 0.2; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; overflow: hidden; font-family: 'Courier New', monospace; font-size: 14px; }
+        canvas { display: block; position: absolute; top: 0; left: 0; z-index: 1; opacity: 0.1; }
         
-        #login-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; color: #00ff41; z-index: 10; position: relative; }
-        .login-box { border: 1px solid #00ff41; padding: 40px; background: rgba(0,0,0,0.95); box-shadow: 0 0 30px #00ff41; text-align: center; border-radius: 10px; }
+        /* Persistent Loader */
+        #session-loader { position: fixed; width: 100%; height: 100%; background: #000; z-index: 999; display: flex; align-items: center; justify-content: center; color: #00ff41; letter-spacing: 5px; }
+
+        /* Login Screen */
+        #login-screen { display: none; flex-direction: column; align-items: center; justify-content: center; height: 100vh; color: #00ff41; z-index: 10; position: relative; }
+        .login-box { border: 1px solid #00ff41; padding: 50px 30px; background: rgba(0, 10, 0, 0.95); box-shadow: 0 0 30px rgba(0, 255, 65, 0.2); text-align: center; border-radius: 8px; width: 90%; max-width: 380px; }
+        .system-title { font-size: 32px; font-weight: bold; letter-spacing: 10px; margin: 0; text-shadow: 0 0 10px #00ff41; }
         
-        button.login-btn { background: #00ff41; color: #000; border: none; padding: 15px 30px; margin-top: 20px; cursor: pointer; font-weight: bold; font-family: inherit; font-size: 16px; transition: 0.4s; letter-spacing: 2px; }
-        button.login-btn:hover { background: #008f11; color: #fff; box-shadow: 0 0 20px #00ff41; transform: scale(1.05); }
-        
-        #terminal { display: none; width: 100%; height: calc(100% - 150px); padding: 30px; box-sizing: border-box; overflow-y: auto; color: #00ff41; z-index: 5; position: relative; background: rgba(0,0,0,0.8); }
-        .output { margin-bottom: 10px; line-height: 1.5; text-shadow: 0 0 5px #00ff41; border-left: 3px solid #00ff41; padding-left: 15px; animation: slideIn 0.3s ease-out; }
+        button.login-btn { background: #00ff41; color: #000; border: none; padding: 15px 30px; margin-top: 30px; cursor: pointer; font-weight: bold; font-family: inherit; font-size: 15px; width: 100%; letter-spacing: 2px; }
+
+        /* Terminal Interface */
+        #main-interface { display: none; height: 100vh; flex-direction: column; }
+        #terminal { flex: 1; padding: 30px; overflow-y: auto; color: #00ff41; background: rgba(0,0,0,0.85); z-index: 5; position: relative; scroll-behavior: smooth; border-bottom: 1px solid #00ff41; }
+        .output { margin-bottom: 8px; line-height: 1.4; border-left: 2px solid #00ff41; padding-left: 15px; animation: slideIn 0.3s ease; }
         @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
 
-        /* Bottom Control Panel */
-        #menu-container {
-            display: none;
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 150px;
-            background: rgba(0, 20, 0, 0.98);
-            border-top: 2px solid #00ff41;
-            z-index: 100;
-            padding: 20px;
-            box-sizing: border-box;
-            flex-direction: column;
-            align-items: center;
-        }
-        .menu-title { font-size: 12px; margin-bottom: 15px; color: #55ff55; font-weight: bold; text-transform: uppercase; letter-spacing: 4px; }
-        .button-grid { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; max-width: 1100px; }
-        .service-btn {
-            background: transparent;
-            color: #00ff41;
-            border: 1px solid #00ff41;
-            padding: 10px 20px;
-            font-size: 13px;
-            cursor: pointer;
-            font-family: inherit;
-            transition: 0.3s;
-            text-transform: uppercase;
-        }
-        .service-btn:hover { background: #00ff41; color: #000; box-shadow: 0 0 15px #00ff41; }
-        .exit-btn { border-color: #ff5555; color: #ff5555; }
-        .exit-btn:hover { background: #ff5555; color: #000; }
+        /* Modern Tool Dashboard */
+        #menu-container { height: 180px; background: rgba(0, 15, 0, 0.98); z-index: 100; padding: 15px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; }
+        .menu-title { font-size: 10px; margin-bottom: 10px; color: #55ff55; letter-spacing: 4px; text-transform: uppercase; }
         
-        .sync-loader { color: #00ff41; font-size: 14px; letter-spacing: 2px; }
+        .button-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; width: 100%; max-width: 1200px; padding: 5px; }
+        .service-btn { 
+            background: rgba(0, 255, 65, 0.05); 
+            color: #00ff41; 
+            border: 1px solid rgba(0, 255, 65, 0.5); 
+            padding: 10px; 
+            font-size: 11px; 
+            cursor: pointer; 
+            font-family: inherit; 
+            text-transform: uppercase; 
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        .service-btn:hover { background: #00ff41; color: #000; box-shadow: 0 0 15px #00ff41; border-color: #00ff41; }
+        .exit-btn { border-color: #ff5555; color: #ff5555; }
+        .exit-btn:hover { background: #ff5555; color: #000; box-shadow: 0 0 10px #ff5555; }
+
+        /* Custom Scrollbar */
+        #terminal::-webkit-scrollbar { width: 5px; }
+        #terminal::-webkit-scrollbar-thumb { background: #00ff41; }
     </style>
 </head>
 <body>
 
+    <div id="session-loader">INITIALIZING SESSION...</div>
     <canvas id="matrix"></canvas>
 
     <div id="login-screen">
         <div class="login-box">
-            <h1 style="letter-spacing: 8px; margin-bottom: 5px;">TERMINAL OS</h1>
-            <p style="font-size: 11px; color: #888; text-transform: uppercase;">Secure Environment v3.0.0</p>
-            <button class="login-btn" onclick="googleLogin()">LOGIN WITH CLOUD ID</button>
+            <h1 class="system-title">ROOT OS</h1>
+            <p style="color: #888; font-size: 12px; margin-top: 10px;">SECURE ACCESS GATEWAY</p>
+            <button class="login-btn" onclick="googleLogin()">CLOUD LOGIN</button>
         </div>
     </div>
 
-    <div id="terminal">
-        <div id="history"></div>
-    </div>
-
-    <div id="menu-container">
-        <div class="menu-title">Remote Access Control Panel</div>
-        <div id="button-grid" class="button-grid">
-            <div class="sync-loader">Syncing Remote Modules...</div>
+    <div id="main-interface">
+        <div id="terminal">
+            <div id="history"></div>
+        </div>
+        <div id="menu-container">
+            <div class="menu-title">Control Panel & Tools</div>
+            <div id="button-grid" class="button-grid"></div>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-        // Firebase Setup (Your Details)
         const firebaseConfig = {
             apiKey: "AIzaSyB55EOqdZRur1zfWSc2pNrXO0yncP3kz74",
             authDomain: "kali-linux-terminal-dd03c.firebaseapp.com",
@@ -95,132 +93,102 @@
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
 
+        // Check Session on Load
+        onAuthStateChanged(auth, (user) => {
+            document.getElementById('session-loader').style.display = 'none';
+            if (user) {
+                startDashboard(user.displayName);
+            } else {
+                document.getElementById('login-screen').style.display = 'flex';
+                document.getElementById('main-interface').style.display = 'none';
+            }
+        });
+
         window.googleLogin = async () => {
-            try {
-                const result = await signInWithPopup(auth, provider);
-                startDashboard(result.user.displayName);
-            } catch (err) { alert("Authentication Failed: " + err.message); }
+            try { await signInWithPopup(auth, provider); } 
+            catch (err) { alert("Login Failed"); }
+        };
+
+        window.logout = () => {
+            signOut(auth).then(() => location.reload());
         };
     </script>
 
     <script>
-        // --- CONFIG: GitHub JSON লিঙ্কটি এখানে দিন ---
-        const JSON_URL = "https://raw.githubusercontent.com/Rahulislam03/Kali-linux-/refs/heads/main/services.json";
-
-        const canvas = document.getElementById('matrix');
-        const ctx = canvas.getContext('2d');
-        const terminal = document.getElementById('terminal');
-        const loginScreen = document.getElementById('login-screen');
+        const JSON_URL = "https://raw.githubusercontent.com/Rahulislam03/Kali-linux-/main/services.json";
         const historyDiv = document.getElementById('history');
-        const menuContainer = document.getElementById('menu-container');
+        const terminal = document.getElementById('terminal');
         const buttonGrid = document.getElementById('button-grid');
 
-        // Matrix Background Effect
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        const alphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ#$@&*";
-        const fontSize = 16;
-        const columns = canvas.width / fontSize;
-        const drops = Array(Math.floor(columns)).fill(1);
-
+        // Matrix Background
+        const canvas = document.getElementById('matrix');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+        const alphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ$#@&";
+        const drops = Array(Math.floor(canvas.width / 16)).fill(1);
         function drawMatrix() {
-            ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = "#0F0";
-            ctx.font = fontSize + "px monospace";
-            for (let i = 0; i < drops.length; i++) {
+            ctx.fillStyle = "rgba(0, 0, 0, 0.05)"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "#0F0"; ctx.font = "16px monospace";
+            drops.forEach((y, i) => {
                 const text = alphabet.charAt(Math.floor(Math.random() * alphabet.length));
-                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+                ctx.fillText(text, i * 16, y * 16);
+                if (y * 16 > canvas.height && Math.random() > 0.975) drops[i] = 0;
                 drops[i]++;
-            }
+            });
         }
         setInterval(drawMatrix, 50);
 
-        // Dashboard Initializer
         function startDashboard(name) {
-            loginScreen.style.display = 'none';
-            terminal.style.display = 'block';
-            menuContainer.style.display = 'flex';
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('main-interface').style.display = 'flex';
             
-            printOutput(`[SYS] ACCESS GRANTED: User ${name} verified.`);
-            printOutput(`[SYS] Establishing secure uplink to remote config...`);
+            printOutput(`[SYS] SESSION RESTORED: Welcome, Agent ${name}.`);
+            loadServices();
 
-            // AI Welcome Voice
-            const firstName = name.split(' ')[0];
-            const welcomeText = `Access granted. Welcome back, agent ${firstName}. All systems are functional.`;
-            const speech = new SpeechSynthesisUtterance(welcomeText);
-            speech.pitch = 0.7; // Deep/Robotic voice
-            speech.rate = 0.9;
+            // Voice Welcome
+            const speech = new SpeechSynthesisUtterance(`Welcome back, agent ${name.split(' ')[0]}. Systems ready.`);
+            speech.pitch = 0.8; speech.rate = 0.9;
             window.speechSynthesis.speak(speech);
-
-            loadRemoteServices();
         }
 
-        // Fetch Services from GitHub
-        async function loadRemoteServices() {
+        async function loadServices() {
             try {
-                const response = await fetch(JSON_URL);
-                if (!response.ok) throw new Error();
-                const services = await response.json();
-                buttonGrid.innerHTML = ""; // Clear loader
+                const res = await fetch(JSON_URL);
+                const services = await res.json();
+                buttonGrid.innerHTML = "";
 
-                services.forEach(service => {
+                services.forEach(s => {
                     const btn = document.createElement('button');
                     btn.className = 'service-btn';
-                    btn.innerText = service.name;
-                    btn.onclick = () => handleAction(service);
+                    btn.innerText = s.name;
+                    btn.onclick = () => handleAction(s);
                     buttonGrid.appendChild(btn);
                 });
 
-                // Clear Console Button
-                const clrBtn = document.createElement('button');
-                clrBtn.className = 'service-btn';
-                clrBtn.innerText = "Clear Screen";
-                clrBtn.onclick = () => { historyDiv.innerHTML = ""; printOutput("[LOGS] Terminal history wiped."); };
-                buttonGrid.appendChild(clrBtn);
+                // Clear & Logout Buttons
+                addButton("Clear Console", () => { historyDiv.innerHTML = ""; printOutput("[SYS] Logs wiped."); });
+                addButton("Logout", () => logout(), "exit-btn");
 
-                // Logout Button
-                const exitBtn = document.createElement('button');
-                exitBtn.className = 'service-btn exit-btn';
-                exitBtn.innerText = "Logout";
-                exitBtn.onclick = () => location.reload();
-                buttonGrid.appendChild(exitBtn);
-
-                printOutput("[OK] Remote modules synchronized successfully.");
-            } catch (err) {
-                printOutput("[ERROR] Failed to fetch services from GitHub.");
-                buttonGrid.innerHTML = "<div style='color:#ff5555'>Remote Connection Error</div>";
-            }
+            } catch (e) { printOutput("[ERROR] Failed to load remote tools."); }
         }
 
-        // Handle Service Execution
-        function handleAction(service) {
-            printOutput(`[CMD] Running: ${service.name.toUpperCase()}`);
-            
-            if (service.url) {
-                printOutput(`[SYS] Opening remote gateway: ${service.url}`);
-                setTimeout(() => window.open(service.url, '_blank'), 1000);
+        function addButton(text, action, extraClass = "") {
+            const btn = document.createElement('button');
+            btn.className = `service-btn ${extraClass}`;
+            btn.innerText = text;
+            btn.onclick = action;
+            buttonGrid.appendChild(btn);
+        }
+
+        function handleAction(s) {
+            printOutput(`[CMD] Running: ${s.name.toUpperCase()}`);
+            if (s.url) {
+                window.open(s.url, '_blank');
             } else {
-                // Handle Multi-line Text Output with animation
-                const lines = service.output.split('\n');
-                lines.forEach((line, index) => {
-                    setTimeout(() => printOutput(line), index * 350);
+                s.output.split('\n').forEach((line, i) => {
+                    setTimeout(() => printOutput(line), i * 300);
                 });
             }
-
-            // Real-time IP Tracking (if service is IP related)
-            if (service.id === 'ip' || service.name.toLowerCase().includes('ip')) {
-                fetch('https://ipapi.co/json/')
-                    .then(res => res.json())
-                    .then(data => {
-                        printOutput(`[DATA] Network IP: ${data.ip}`);
-                        printOutput(`[DATA] ISP Node: ${data.org}`);
-                        printOutput(`[DATA] Geo: ${data.city}, ${data.country_name}`);
-                    });
-            }
-            
-            terminal.scrollTop = terminal.scrollHeight;
         }
 
         function printOutput(text) {
