@@ -1,1 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Root OS | Dashboard</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <style>
+        /* ড্যাশবোর্ড স্পেসিফিক লেআউট */
+        #main-container { display: flex; flex-direction: column; height: 100vh; position: relative; z-index: 5; }
+        
+        #top-bar { 
+            background: rgba(0, 20, 0, 0.9); 
+            border-bottom: 1px solid #00ff41; 
+            padding: 10px 20px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+        }
 
+        .user-section { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+        .user-section img { width: 35px; height: 35px; border-radius: 50%; border: 1px solid #00ff41; }
+        .user-name { color: #00ff41; font-weight: bold; font-size: 13px; }
+
+        #terminal { 
+            flex: 1; 
+            padding: 25px; 
+            overflow-y: auto; 
+            background: rgba(0,0,0,0.8);
+            color: #00ff41;
+            scroll-behavior: smooth;
+        }
+
+        #menu-container { 
+            height: 160px; 
+            background: rgba(0, 15, 0, 0.98); 
+            border-top: 1px solid #00ff41; 
+            padding: 15px; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+        }
+
+        .button-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); 
+            gap: 10px; 
+            width: 100%; 
+            max-width: 1000px; 
+        }
+
+        .output { margin-bottom: 8px; border-left: 2px solid #00ff41; padding-left: 12px; animation: slideIn 0.3s ease; }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+    </style>
+</head>
+<body>
+
+    <canvas id="matrix"></canvas>
+
+    <div id="main-container">
+        <div id="top-bar">
+            <div style="color: #00ff41; font-weight: bold; letter-spacing: 2px;">TERMINAL_V5.0</div>
+            <div class="user-section" onclick="window.location.href='pages/admin.html'">
+                <span class="user-name" id="user-display-name">Loading...</span>
+                <img id="user-display-pic" src="https://via.placeholder.com/150" alt="Profile">
+            </div>
+        </div>
+
+        <div id="terminal">
+            <div id="history"></div>
+        </div>
+
+        <div id="menu-container">
+            <div style="font-size: 10px; color: #55ff55; margin-bottom: 10px; letter-spacing: 3px;">REMOTE MODULES</div>
+            <div class="button-grid" id="button-grid">
+                <div style="color: #444;">Syncing services...</div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { initTerminal } from "./assets/js/terminal.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyB55EOqdZRur1zfWSc2pNrXO0yncP3kz74",
+            authDomain: "kali-linux-terminal-dd03c.firebaseapp.com",
+            projectId: "kali-linux-terminal-dd03c",
+            storageBucket: "kali-linux-terminal-dd03c.firebasestorage.app",
+            messagingSenderId: "205004830636",
+            appId: "1:205004830636:web:cfbb3ff118d2a42e002c09",
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                document.getElementById('user-display-name').innerText = user.displayName;
+                document.getElementById('user-display-pic').src = user.photoURL;
+                // Terminal logic শুরু করা
+                initTerminal();
+            } else {
+                window.location.href = "index.html";
+            }
+        });
+    </script>
+    
+    <script src="assets/js/matrix.js"></script>
+</body>
+  </html>
+  
