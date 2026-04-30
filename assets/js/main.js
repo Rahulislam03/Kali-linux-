@@ -1,27 +1,30 @@
-const TOOLS_URL = "https://raw.githubusercontent.com/Rahulislam03/Kali-linux-/main/services.json";
+const SERVICES_URL = "https://raw.githubusercontent.com/Rahulislam03/Kali-linux-/main/services.json";
 
-export async function loadTools() {
+export async function initTerminal() {
     const grid = document.getElementById('tool-grid');
+    if (!grid) return;
+
     try {
-        const response = await fetch(TOOLS_URL);
+        const response = await fetch(SERVICES_URL);
         const tools = await response.json();
-        grid.innerHTML = "";
+        grid.innerHTML = ""; 
 
         tools.forEach(tool => {
-            const card = document.createElement('a');
-            card.href = tool.url;
-            card.target = "_blank";
-            card.className = "tool-card";
-            
-            card.innerHTML = `
-                <img src="${tool.icon}" class="tool-icon" alt="${tool.name}">
-                <span style="font-size: 10px; color: blue; text-transform: uppercase;">${tool.category}</span>
-                <h3>${tool.name}</h3>
-                <p>${tool.description}</p>
-            `;
-            grid.appendChild(card);
+            const btn = document.createElement('button');
+            btn.className = "btn";
+            btn.innerText = tool.name;
+            btn.onclick = () => {
+                const history = document.getElementById('history');
+                const div = document.createElement('div');
+                div.className = "line";
+                div.innerText = `> Running ${tool.name}...`;
+                history.appendChild(div);
+                
+                if(tool.url) window.open(tool.url, '_blank');
+            };
+            grid.appendChild(btn);
         });
     } catch (err) {
-        console.error("Failed to load tools");
+        console.error("Tool sync failed");
     }
-    }
+}
