@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Root OS | Profile Edit</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <style>
+        .edit-box { 
+            max-width: 400px; margin: 100px auto; padding: 30px; 
+            border: 1px solid #00ff41; background: rgba(0,10,0,0.9); text-align: center;
+        }
+        input { 
+            width: 100%; padding: 10px; margin: 10px 0; 
+            background: #000; border: 1px solid #00ff41; color: #00ff41; font-family: inherit;
+        }
+        .save-btn { width: 100%; background: #00ff41; color: #000; border: none; padding: 12px; cursor: pointer; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="edit-box">
+        <h2 style="color: #00ff41; letter-spacing: 3px;">EDIT PROFILE</h2>
+        <input type="text" id="newName" placeholder="Enter New Name">
+        <input type="text" id="newPic" placeholder="Enter Profile Image URL">
+        <button class="save-btn" id="saveBtn">UPDATE SYSTEM PROFILE</button>
+        <p><a href="../dashboard.html" style="color: #888; text-decoration: none; font-size: 12px;">[ CANCEL ]</a></p>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, updateProfile } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        const firebaseConfig = { /* Same Config */ };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        document.getElementById('saveBtn').onclick = async () => {
+            const user = auth.currentUser;
+            const name = document.getElementById('newName').value;
+            const pic = document.getElementById('newPic').value;
+
+            if (user) {
+                try {
+                    await updateProfile(user, {
+                        displayName: name || user.displayName,
+                        photoURL: pic || user.photoURL
+                    });
+                    alert("Profile Updated Successfully!");
+                    window.location.href = "../dashboard.html";
+                } catch (e) { alert("Error updating profile."); }
+            }
+        };
+    </script>
+</body>
+</html>
+
