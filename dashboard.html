@@ -2,49 +2,95 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ROOT OS | Dashboard</title>
     <link rel="stylesheet" href="assets/css/style.css">
+    <style>
+        /* Dashboard specific layout fixed for mobile */
+        #main-container { display: flex; flex-direction: column; height: 100vh; position: relative; z-index: 10; }
+        #top-bar { 
+            display: flex; justify-content: space-between; align-items: center; 
+            padding: 10px 15px; background: rgba(0, 15, 0, 0.9); border-bottom: 1px solid #00ff41; 
+        }
+        .user-section { display: flex; align-items: center; gap: 8px; cursor: pointer; border: 1px solid #00ff41; padding: 4px 10px; border-radius: 20px; }
+        .user-section img { width: 28px; height: 28px; border-radius: 50%; border: 1px solid #00ff41; }
+        .user-name { color: #00ff41; font-size: 12px; font-weight: bold; }
+
+        #terminal { flex: 1; padding: 20px; overflow-y: auto; background: rgba(0,0,0,0.8); color: #00ff41; font-size: 13px; }
+        .line { margin-bottom: 8px; border-left: 2px solid #00ff41; padding-left: 10px; }
+
+        #menu-container { padding: 15px; border-top: 1px solid #00ff41; background: rgba(0,10,0,0.95); }
+        .button-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; }
+        .btn { background: transparent; color: #00ff41; border: 1px solid #00ff41; padding: 10px; cursor: pointer; font-family: inherit; font-size: 11px; text-transform: uppercase; }
+        .btn:hover { background: #00ff41; color: #000; box-shadow: 0 0 10px #00ff41; }
+        
+        /* Logout Button Style */
+        .logout-btn { border-color: #ff3333; color: #ff3333; margin-top: 10px; width: 100%; }
+        .logout-btn:hover { background: #ff3333; color: #fff; box-shadow: 0 0 10px #ff3333; }
+    </style>
 </head>
 <body>
     <canvas id="matrix"></canvas>
+
     <div id="main-container">
         <div id="top-bar">
-            <div class="sys-title">TERMINAL_CORE_V5.0</div>
-            <div class="user-info" onclick="window.location.href='pages/admin.html'">
-                <span id="u-name">...</span>
-                <img id="u-pic" src="" alt="P">
+            <div style="letter-spacing: 2px; font-weight: bold; font-size: 12px;">TERMINAL_CORE_V5.0</div>
+            <div class="user-section" onclick="window.location.href='pages/admin.html'">
+                <span class="user-name" id="display-name">Loading...</span>
+                <img id="display-pic" src="" alt="User">
             </div>
         </div>
 
         <div id="terminal">
-            <div id="history"></div>
+            <div id="history">
+                <div class="line">> [SYSTEM] Booting...</div>
+                <div class="line">> [SYSTEM] Initializing remote handshake...</div>
+            </div>
         </div>
 
         <div id="menu-container">
             <div class="button-grid" id="tool-grid">
-                <div class="loader">Syncing Modules...</div>
+                <div style="color: #444;">Syncing...</div>
             </div>
+            <button class="btn logout-btn" id="logoutBtn">TERMINATE SESSION (LOGOUT)</button>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { initTerminal } from "./assets/js/terminal.js";
 
-        const firebaseConfig = { /* Sames as index.html */ };
+        const firebaseConfig = {
+            apiKey: "AIzaSyB55EOqdZRur1zfWSc2pNrXO0yncP3kz74",
+            authDomain: "kali-linux-terminal-dd03c.firebaseapp.com",
+            projectId: "kali-linux-terminal-dd03c",
+            storageBucket: "kali-linux-terminal-dd03c.firebasestorage.app",
+            messagingSenderId: "205004830636",
+            appId: "1:205004830636:web:cfbb3ff118d2a42e002c09",
+        };
+
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
 
+        // Session Control
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                document.getElementById('u-name').innerText = user.displayName;
-                document.getElementById('u-pic').src = user.photoURL;
+                document.getElementById('display-name').innerText = user.displayName;
+                document.getElementById('display-pic').src = user.photoURL || 'https://via.placeholder.com/150';
+                // Load tools from GitHub via terminal.js
                 initTerminal();
             } else {
                 window.location.href = "index.html";
             }
         });
+
+        // Logout Functionality
+        document.getElementById('logoutBtn').onclick = () => {
+            signOut(auth).then(() => {
+                window.location.href = "index.html";
+            });
+        };
     </script>
     <script src="assets/js/matrix.js"></script>
 </body>
