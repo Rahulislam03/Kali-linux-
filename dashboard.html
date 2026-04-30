@@ -3,98 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Root OS | Dashboard</title>
+    <title>ToolHub | Dashboard</title>
     <link rel="stylesheet" href="assets/css/style.css">
     <style>
-        #main-container { display: flex; flex-direction: column; height: 100vh; position: relative; z-index: 10; }
-        #top-bar { 
-            display: flex; justify-content: space-between; align-items: center; 
-            padding: 10px 15px; background: rgba(0, 15, 0, 0.95); border-bottom: 1px solid #00ff41; 
-        }
-        .user-section { 
-            display: flex; align-items: center; gap: 8px; cursor: pointer; 
-            border: 1px solid #00ff41; padding: 5px 12px; border-radius: 25px; transition: 0.3s;
-        }
-        .user-section:hover { background: rgba(0, 255, 65, 0.2); }
-        .user-section img { width: 30px; height: 30px; border-radius: 50%; border: 1px solid #00ff41; }
-        .user-name { color: #00ff41; font-size: 13px; font-weight: bold; }
-
-        #terminal { flex: 1; padding: 20px; overflow-y: auto; background: rgba(0,0,0,0.8); color: #00ff41; }
-        .line { margin-bottom: 8px; border-left: 2px solid #00ff41; padding-left: 10px; }
-
-        #menu-container { padding: 15px; border-top: 1px solid #00ff41; background: rgba(0,5,0,0.98); }
-        .button-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; }
-        .btn { background: transparent; color: #00ff41; border: 1px solid #00ff41; padding: 10px; cursor: pointer; font-family: inherit; font-size: 11px; text-transform: uppercase; }
-        .btn:hover { background: #00ff41; color: #000; }
+        :root { --bg: #f8f9fa; --card: #ffffff; --text: #1a1a1a; --primary: #007bff; }
+        body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; margin: 0; }
+        header { background: #fff; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; position: sticky; top: 0; z-index: 10; }
+        .profile { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+        .profile img { width: 35px; height: 35px; border-radius: 50%; border: 2px solid var(--primary); }
         
-        .logout-btn { border-color: #ff3333; color: #ff3333; margin-top: 15px; width: 100%; }
-        .logout-btn:hover { background: #ff3333; color: #fff; }
+        .main-content { padding: 40px 20px; max-width: 1200px; margin: 0 auto; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; }
+        
+        /* Tool Card Design */
+        .tool-card { background: var(--card); border-radius: 15px; padding: 25px; border: 1px solid #eee; transition: 0.3s; text-decoration: none; color: inherit; display: block; }
+        .tool-card:hover { transform: translateY(-8px); box-shadow: 0 15px 30px rgba(0,0,0,0.1); border-color: var(--primary); }
+        .tool-icon { width: 50px; height: 50px; background: #e7f1ff; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 15px; }
+        .tool-card h3 { margin: 0 0 10px 0; font-size: 18px; }
+        .tool-card p { font-size: 14px; color: #666; margin: 0; }
+
+        .logout-btn { background: #ff4d4d; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; }
     </style>
 </head>
 <body>
-    <canvas id="matrix"></canvas>
 
-    <div id="main-container">
-        <div id="top-bar">
-            <div style="letter-spacing: 2px; font-weight: bold; color: #00ff41;">TERMINAL_CORE_V5.0</div>
-            <div class="user-section" onclick="window.location.href='pages/admin.html'">
-                <span class="user-name" id="display-name">Loading...</span>
-                <img id="display-pic" src="" alt="User">
+    <header>
+        <div style="font-size: 20px; font-weight: 900; color: var(--primary);">TOOL<span style="color: #000;">HUB</span></div>
+        <div class="profile" onclick="window.location.href='pages/admin.html'">
+            <span id="uName" style="font-weight: bold;">Agent</span>
+            <img id="uPic" src="" alt="">
+            <button class="logout-btn" id="logoutBtn" style="margin-left: 15px;">Logout</button>
+        </div>
+    </header>
+
+    <div class="main-content">
+        <h2 style="margin-bottom: 30px;">Discover Your Tools</h2>
+        <div class="grid" id="toolGrid">
             </div>
-        </div>
-
-        <div id="terminal">
-            <div id="history">
-                <div class="line">> [SYSTEM] Accessing secure protocols...</div>
-                <div class="line">> [SYSTEM] Welcome, Agent.</div>
-            </div>
-        </div>
-
-        <div id="menu-container">
-            <div class="button-grid" id="tool-grid">
-                </div>
-            <button class="btn logout-btn" id="logoutBtn">TERMINATE SESSION (LOGOUT)</button>
-        </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { initTerminal } from "./assets/js/terminal.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyB55EOqdZRur1zfWSc2pNrXO0yncP3kz74",
-            authDomain: "kali-linux-terminal-dd03c.firebaseapp.com",
-            projectId: "kali-linux-terminal-dd03c",
-            storageBucket: "kali-linux-terminal-dd03c.firebasestorage.app",
-            messagingSenderId: "205004830636",
-            appId: "1:205004830636:web:cfbb3ff118d2a42e002c09",
-        };
-
+        const firebaseConfig = { /* আপনার কনফিগ */ };
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                document.getElementById('display-name').innerText = user.displayName || "Agent";
-                document.getElementById('display-pic').src = user.photoURL || 'https://via.placeholder.com/150';
-                initTerminal();
-            } else {
-                window.location.href = "index.html";
-            }
+                document.getElementById('uName').innerText = user.displayName;
+                document.getElementById('uPic').src = user.photoURL;
+                loadTools();
+            } else { window.location.href = "index.html"; }
         });
 
-        // Fixed Logout Logic
-        const logoutBtn = document.getElementById('logoutBtn');
-        if (logoutBtn) {
-            logoutBtn.onclick = () => {
-                signOut(auth).then(() => {
-                    window.location.href = "index.html";
-                });
-            };
+        async function loadTools() {
+            const res = await fetch("https://raw.githubusercontent.com/Rahulislam03/Kali-linux-/main/services.json");
+            const tools = await res.json();
+            const grid = document.getElementById('toolGrid');
+            grid.innerHTML = tools.map(tool => `
+                <a href="${tool.url}" target="_blank" class="tool-card">
+                    <div class="tool-icon">🛠️</div>
+                    <h3>${tool.name}</h3>
+                    <p>${tool.description || "Click to access this automation tool."}</p>
+                </a>
+            `).join('');
         }
+
+        document.getElementById('logoutBtn').onclick = () => signOut(auth);
     </script>
-    <script src="assets/js/matrix.js"></script>
 </body>
-    </html>
-    
+</html>
