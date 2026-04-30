@@ -2,125 +2,29 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ROOT OS | Portal Gate</title>
+    <title>ROOT OS | Secure Gateway</title>
     <link rel="stylesheet" href="assets/css/style.css">
     <style>
-        /* Door Animation Styles */
-        .door-container {
-            perspective: 1000px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            background: #000;
-        }
-
-        .door-wrapper {
-            position: relative;
-            width: 200px;
-            height: 300px;
-            border: 3px solid #00ff41;
-            box-shadow: 0 0 20px rgba(0, 255, 65, 0.5);
-            perspective: 1000px;
-        }
-
-        .door {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            background: #001a00;
-            border-right: 2px solid #00ff41;
-            transform-origin: left;
-            transition: transform 1.5s cubic-bezier(0.4, 0, 0.2, 1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 2;
-        }
-
-        .door.open {
-            transform: rotateY(-110deg);
-        }
-
-        .door::after {
-            content: '';
-            width: 15px;
-            height: 15px;
-            background: #00ff41;
-            border-radius: 50%;
-            position: absolute;
-            right: 15px;
-            box-shadow: 0 0 10px #00ff41;
-        }
-
-        .portal-content {
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-            z-index: 1;
-            color: #00ff41;
-            white-space: nowrap;
-        }
-
-        /* Auth Buttons */
-        .auth-container {
-            margin-top: 50px;
-            display: flex;
-            gap: 15px;
-            z-index: 10;
-        }
-
-        .gate-btn {
-            background: transparent;
-            color: #00ff41;
-            border: 1px solid #00ff41;
-            padding: 12px 25px;
-            cursor: pointer;
-            font-family: 'Courier New', monospace;
-            font-weight: bold;
-            transition: 0.3s;
-            text-transform: uppercase;
-        }
-
-        .gate-btn:hover {
-            background: #00ff41;
-            color: #000;
-            box-shadow: 0 0 20px #00ff41;
-        }
-
-        #status-msg {
-            color: #555;
-            font-size: 12px;
-            margin-top: 20px;
-            letter-spacing: 2px;
-        }
+        .gate-container { height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #000; }
+        .door-box { width: 220px; height: 320px; border: 2px solid #00ff41; position: relative; perspective: 1000px; cursor: pointer; }
+        .door { position: absolute; width: 100%; height: 100%; background: #001a00; border-right: 2px solid #00ff41; transform-origin: left; transition: 1.2s; z-index: 2; display: flex; align-items: center; justify-content: center; }
+        .door.open { transform: rotateY(-110deg); }
+        .auth-buttons { margin-top: 40px; display: flex; gap: 20px; z-index: 10; }
+        .btn-gate { background: transparent; color: #00ff41; border: 1px solid #00ff41; padding: 12px 30px; cursor: pointer; font-weight: bold; }
+        .btn-gate:hover { background: #00ff41; color: #000; }
     </style>
 </head>
 <body>
-
     <canvas id="matrix"></canvas>
-
-    <div class="door-container">
-        <h1 style="letter-spacing: 10px; margin-bottom: 20px;">SYSTEM GATE</h1>
-        
-        <div class="door-wrapper">
-            <div class="door" id="main-door">
-                <span style="font-size: 10px; letter-spacing: 2px;">LOCKED</span>
-            </div>
-            <div class="portal-content">
-                <p>ACCESSING...</p>
-            </div>
+    <div class="gate-container">
+        <div class="door-box" id="portal">
+            <div class="door" id="door-element"><span>LOCKED</span></div>
+            <div style="color: #00ff41; padding: 50px; text-align: center;">ENTERING SYSTEM...</div>
         </div>
-
-        <div class="auth-container">
-            <button class="gate-btn" id="loginBtn">LOG IN</button>
-            <button class="gate-btn" id="signupBtn" style="border-style: dashed;">SIGN UP</button>
+        <div class="auth-buttons">
+            <button class="btn-gate" id="loginBtn">LOG IN / SIGN UP</button>
         </div>
-
-        <p id="status-msg">WAITING FOR AUTHORIZATION...</p>
+        <p id="status" style="color: #444; margin-top: 20px; letter-spacing: 2px;">AUTHENTICATION REQUIRED</p>
     </div>
 
     <script type="module">
@@ -140,32 +44,16 @@
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
 
-        const door = document.getElementById('main-door');
-
-        // সেশন চেক: যদি ইউজার অলরেডি লগইন থাকে
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                door.classList.add('open'); // দরজা খুলে যাবে
-                document.getElementById('status-msg').innerText = "AUTHORIZED! REDIRECTING...";
-                setTimeout(() => {
-                    window.location.href = "dashboard.html";
-                }, 2000);
+                document.getElementById('door-element').classList.add('open');
+                document.getElementById('status').innerText = "AUTHORIZED! ACCESSING DASHBOARD...";
+                setTimeout(() => window.location.href = "dashboard.html", 1500);
             }
         });
 
-        // লগইন ফাংশন
-        const enterSystem = async () => {
-            document.getElementById('status-msg').innerText = "CONNECTING TO PORTAL...";
-            try {
-                await signInWithPopup(auth, provider);
-            } catch (err) {
-                document.getElementById('status-msg').innerText = "ACCESS DENIED";
-            }
-        };
-
-        document.getElementById('loginBtn').onclick = enterSystem;
-        document.getElementById('signupBtn').onclick = enterSystem;
+        document.getElementById('loginBtn').onclick = () => signInWithPopup(auth, provider);
     </script>
-    <script src="assets/js/matrix.js"></script>
 </body>
 </html>
+
