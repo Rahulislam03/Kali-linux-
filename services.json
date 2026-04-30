@@ -1,17 +1,16 @@
 [
   {
-    "id": "free_net_scan",
-    "name": "Start Free-Net Scan",
-    "output": "[!] Initializing Global Bug Scanner...\n[!] Searching for Open SNI/Host Nodes...\n[+] Target: m.facebook.com | m.instagram.com\n[+] Status: Vulnerable Port 80/443 Found!\n[!] Suggestion: Use HTTP Injector with SNI Method."
+    "name": "Figma",
+    "category": "Design",
+    "description": "Collaborative interface design tool for teams.",
+    "url": "https://figma.com",
+    "icon": "https://upload.wikimedia.org/wikipedia/commons/3/33/Figma-logo.svg"
   },
   {
-    "id": "get_script",
-    "name": "Get Python Tool",
-    "output": "[SYS] To download the scanner script, run:\ngit clone https://github.com/Rahulislam03/Kali-linux-\ncd Kali-linux-\npython3 free_net_scanner.py"
-  },
-  {
-    "id": "proxy_list",
-    "name": "Fetch Proxy List",
-    "output": "[+] Fetching active proxies...\n[1] 104.21.75.201:80 (Cloudflare)\n[2] 172.67.188.154:443 (Cloudflare)\n[3] 103.145.255.10:8080 (Local Node)\n[OK] Proxy list updated."
+    "name": "VS Code",
+    "category": "Coding",
+    "description": "Powerful code editor for modern web development.",
+    "url": "https://code.visualstudio.com",
+    "icon": "https://upload.wikimedia.org/wikipedia/commons/9/9a/Visual_Studio_Code_1.35_icon.svg"
   }
 ]
